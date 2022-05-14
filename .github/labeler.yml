@@ -1,0 +1,14 @@
+ci:
+  - '.github/**'
+
+build:
+ - 'Makefile'
+
+terraform:
+  - 'terraform/**'
+
+environments:
+  - 'environments/**'
+
+documentation:
+  - '*.md' 

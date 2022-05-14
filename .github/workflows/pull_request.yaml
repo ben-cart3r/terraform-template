@@ -1,0 +1,112 @@
+# Run pre-commit checks
+# Init / plan
+# Comment plan
+# Add labels?
+
+name: Validate pull request
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+env:
+  AWS_DEFAULT_REGION: eu-west-1
+
+jobs:
+  static_analysis:
+    name: Static analysis
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y make
+
+      - name: Run pre-commit checks
+        uses: pre-commit/action@v2.0.3
+
+  label_pull_request:
+    name: Add / verify PR labels
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - name: Apply labels
+        uses: action/labeler@main
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          sync-labels: true
+
+      - name: Check for semantic version label
+        uses: docker://agilepathway/pull-request-label-checker:latest
+        with:
+          one_of: major,minor,patch
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check for pull request type label
+        uses: docker://agilepathway/pull-request-label-checker:latest
+        with:
+          one_of: bug,enhancement
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+
+  plan:
+    name: Plan terraform changes
+    runs-on:
+      - ubuntu-latest
+    needs:
+      - static_analysis
+      - label_pull_request
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y make
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Initialize terraform
+        run: |
+          make init
+
+      - name: Refresh terraform state
+        run: |
+          make refresh
+
+      - name: Plan terraform
+        run: |
+          make plan
+
+  comment_on_pr:
+    name: Add plan to PR
+    runs-on:
+      - ubuntu-latest
+    needs:
+      - plan
+    steps:
+      - name: Add comment to PR
+        uses: actions/github-script@v6.1.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const header = "### Terraform plan";
+            const outcome = "Status: ${{ needs.plan.outcome }}";
+            const metadata = "*Pusher: @${{ github.actor }}, Action: ${{ github.event_name }}"
+            const plan = "```terraform\n${{ needs.plan.outputs.plan }}```";
+            const message = `${header}\n${outcome}\n${plan}\n${metadata}`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            })
