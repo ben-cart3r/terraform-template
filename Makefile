@@ -4,7 +4,7 @@ TERRAFORM_VERSION		?= 1.1.7
 TFSEC_VERSION			?= v1.13.2-amd64
 INFRACOST_VERSION		?= ci-0.9
 ENVIRONMENT 			?= dev
-CUR_DIR					:= $(shell pwd) # ${PWD} is incosistent in GitHub Actions
+CUR_DIR					:= $(shell pwd)# ${PWD} is incosistent in GitHub Actions
 
 export
 
@@ -21,12 +21,12 @@ fmt:
 
 sec-scan:
 	docker run --platform=linux/amd64 \
-		-v ${PWD}:/src \
+		-v ${CUR_DIR}:/src \
 		tfsec/tfsec:${TFSEC_VERSION} /src/terraform
 
 infracost: show-plan
 	docker run -it --platform=linux/amd64 \
-		-v ${CUR_DIR}:/src \
+		-v ${PWD}:/src \
 		-v ${HOME}/.config/infracost:/root/.config/infracost \
 		infracost/infracost:${INFRACOST_VERSION} breakdown \
 		--path=/src/terraform/plan.json
@@ -43,14 +43,14 @@ init-local: clean
 
 init-no-backend:
 	docker run --platform=linux/amd64 \
-		-v ${PWD}:/src \
+		-v ${CUR_DIR}:/src \
 		-w /src/terraform \
 		hashicorp/terraform:${TERRAFORM_VERSION} init \
 		-backend=false
 
 validate: clean init-no-backend
 	docker run --platform=linux/amd64 \
-		-v ${PWD}:/src \
+		-v ${CUR_DIR}:/src \
 		-w /src/terraform \
 		hashicorp/terraform:${TERRAFORM_VERSION} validate
 
