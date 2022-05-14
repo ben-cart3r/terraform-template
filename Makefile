@@ -18,7 +18,7 @@ clean:
 
 fmt:
 	docker run --platform=linux/amd64 \
-		-v ${PWD}:/src \
+		-v $(shell pwd):/src \
 		-w /src \
 		hashicorp/terraform:${TERRAFORM_VERSION} fmt -recursive
 
