@@ -7,6 +7,10 @@ ENVIRONMENT 			?= dev
 
 export
 
+test:
+	echo ${PWD}
+	echo $(shell pwd)
+
 clean:
 	rm -rf ./terraform/.terraform
 	rm -rf ./terraform/plan.tfplan
@@ -14,13 +18,13 @@ clean:
 
 fmt:
 	docker run --platform=linux/amd64 \
-		-v $(PWD):/src \
+		-v ${PWD}:/src \
 		-w /src \
 		hashicorp/terraform:${TERRAFORM_VERSION} fmt -recursive
 
 sec-scan:
 	docker run --platform=linux/amd64 \
-		-v $(PWD):/src \
+		-v ${PWD}:/src \
 		tfsec/tfsec:${TFSEC_VERSION} /src/terraform
 
 infracost: show-plan
