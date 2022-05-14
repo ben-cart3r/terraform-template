@@ -53,18 +53,7 @@ validate: clean init-no-backend
 		-w /src/terraform \
 		hashicorp/terraform:${TERRAFORM_VERSION} validate
 
-refresh-local:
-	docker run --platform=linux/amd64 \
-		-v ${PWD}:/src \
-		-v ${HOME}/.aws:/root/.aws/ \
-		-v ${HOME}/.ssh:/root/.ssh/ \
-		-w /src/terraform \
-		-e AWS_PROFILE=${AWS_PROFILE} \
-		-e AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
-		hashicorp/terraform:${TERRAFORM_VERSION} refresh \
-		-var-file=../environments/${ENVIRONMENT}/terraform.tfvars
-
-plan-local: refresh-local
+plan-local:
 	docker run --platform=linux/amd64 \
 		-v ${PWD}:/src \
 		-v ${HOME}/.aws:/root/.aws/ \
@@ -74,7 +63,6 @@ plan-local: refresh-local
 		-e AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
 		hashicorp/terraform:${TERRAFORM_VERSION} plan \
 		-var-file=../environments/${ENVIRONMENT}/terraform.tfvars \
-		-refresh=false \
 		-out=plan.tfplan
 
 apply-local:
