@@ -23,8 +23,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          apt-get update
-          apt-get install -y make
+          sudo apt-get update
+          sudo apt-get install -y make
 
       - name: Run pre-commit checks
         uses: pre-commit/action@v2.0.3
@@ -35,7 +35,7 @@ jobs:
       - ubuntu-latest
     steps:
       - name: Apply labels
-        uses: action/labeler@main
+        uses: actions/labeler@main
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           sync-labels: true
