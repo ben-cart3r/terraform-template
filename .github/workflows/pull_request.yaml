@@ -29,18 +29,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y make
 
-      - name: List filesystem
-        run: |
-          ls
-
-      - name: Echo path
-        run: |
-          make test
-
       - name: Run pre-commit checks
         uses: pre-commit/action@v2.0.3
-        with:
-          extra_args: -av
 
   label_pull_request:
     name: Add / verify PR labels
