@@ -7,7 +7,7 @@ name: Validate pull request
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, labeled, unlabled]
 
 env:
   AWS_DEFAULT_REGION: eu-west-1
@@ -29,6 +29,10 @@ jobs:
       - name: List filesystem
         run: |
           ls
+
+      - name: Echo path
+        run: |
+          echo ${PWD}
 
       - name: Run pre-commit checks
         uses: pre-commit/action@v2.0.3
