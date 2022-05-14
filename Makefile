@@ -4,13 +4,9 @@ TERRAFORM_VERSION		?= 1.1.7
 TFSEC_VERSION			?= v1.13.2-amd64
 INFRACOST_VERSION		?= ci-0.9
 ENVIRONMENT 			?= dev
-CUR_DIR					:= $(shell pwd)
+CUR_DIR					:= $(shell pwd) # ${PWD} is incosistent in GitHub Actions
 
 export
-
-test:
-	echo ${PWD}
-	echo $(shell pwd)
 
 clean:
 	rm -rf ./terraform/.terraform
@@ -30,7 +26,7 @@ sec-scan:
 
 infracost: show-plan
 	docker run -it --platform=linux/amd64 \
-		-v ${PWD}:/src \
+		-v ${CUR_DIR}:/src \
 		-v ${HOME}/.config/infracost:/root/.config/infracost \
 		infracost/infracost:${INFRACOST_VERSION} breakdown \
 		--path=/src/terraform/plan.json
