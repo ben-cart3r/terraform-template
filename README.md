@@ -30,6 +30,13 @@
         <li><a href="#applying">Applying</a></li>
       </ul>
     </li>
+    <li>
+      <a href="#layout">Layout</a>
+      <ul>
+        <li><a href="#terraform">Terraform</a></li>
+        <li><a href="#environments">Environments</a></li>
+      </ul>
+    </li>
   </ol>
 </details>
 
@@ -40,8 +47,6 @@ This repo intends to be a boilerplate to speed up the development of new terrafo
 Features:
 - Static analysis tooling ([tfsec](https://aquasecurity.github.io/tfsec/v1.21.0/), [infracost](https://www.infracost.io/))
 - Continuous integration / deployment pipelines ([GitHub Actions](https://github.com/features/actions))
-
-It contains tooling such as static analysis tools and continuous integrations pipelines 
 
 ## Getting Started
 
@@ -87,7 +92,7 @@ make fmt
 
 ### Validating
 
-The validate the terraform configuration:
+To validate the terraform configuration:
 
 ```shell
 make validate
