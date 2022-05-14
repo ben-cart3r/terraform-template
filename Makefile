@@ -4,6 +4,7 @@ TERRAFORM_VERSION		?= 1.1.7
 TFSEC_VERSION			?= v1.13.2-amd64
 INFRACOST_VERSION		?= ci-0.9
 ENVIRONMENT 			?= dev
+CUR_DIR					:= $(shell pwd)
 
 export
 
@@ -18,7 +19,7 @@ clean:
 
 fmt:
 	docker run --platform=linux/amd64 \
-		-v $(shell pwd):/src \
+		-v ${CUR_DIR}:/src \
 		-w /src \
 		hashicorp/terraform:${TERRAFORM_VERSION} fmt -recursive
 
