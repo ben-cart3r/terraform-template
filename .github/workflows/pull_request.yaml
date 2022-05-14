@@ -40,7 +40,7 @@ jobs:
       - name: Run pre-commit checks
         uses: pre-commit/action@v2.0.3
         with:
-          extra_args: -v
+          extra_args: -av
 
   label_pull_request:
     name: Add / verify PR labels
