@@ -1,0 +1,27 @@
+name: Reusable static analysis workflow
+
+on:
+  workflow_call
+
+jobs:
+  label_pull_request:
+    name: Apply & verify labels
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply labels
+        uses: actions/labeler@main
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          sync-labels: true
+
+      - name: Check for semantic version label
+        uses: docker://agilepathway/pull-request-label-checker:latest
+        with:
+          one_of: major,minor,patch
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check for pull request type label
+        uses: docker://agilepathway/pull-request-label-checker:latest
+        with:
+          any_of: bug,enhancement,documentation
+          repo_token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,106 @@
+name: Reusable terraform workflow
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'The name of the GitHub environment to use'
+        required: true
+        type: string
+      enable_private_modules:
+        description: Configure git to clone private modules
+        required: false
+        default: false
+        type: boolean
+      apply:
+        description: 'Whether to deploy terraform changes'
+        required: false
+        default: false
+        type: boolean
+    secrets:
+      ASSUME_ROLE:
+        required: true
+      GITHUB_PAT:
+        required: false
+
+jobs:
+  plan:
+    name: Plan terraform changes
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    # permissions required to interact with the GitHub OIDC endpoint and source the repo
+    permissions:
+      contents: read
+      id-token: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y make
+
+      # Configure git to use HTTPS instead of SSH
+      # ${HOME}/.gitconfig will be mounted to the terraform container
+      - name: Configure git config
+        if: inputs.enable_private_modules
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_PAT }}
+        run: |
+          git config --global url."https://$GITHUB_TOKEN:x-oauth-basic@github.com".insteadOf "ssh://git@github.com"
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.ASSUME_ROLE }}
+          aws-region: eu-west-1
+
+      - name: Initialize terraform
+        run: |
+          ENVIRONMENT=${{ inputs.environment }} make init-ci
+
+      - name: Refresh terraform state
+        run: |
+          ENVIRONMENT=${{ inputs.environment }} make refresh-ci
+
+      - name: Plan terraform
+        id: plan
+        run: |
+          ENVIRONMENT=${{ inputs.environment }} make plan-ci
+
+      - name: Show plan
+        id: show_plan
+        run: |
+          ENVIRONMENT=${{ inputs.environment }} make show-plan-ci
+
+      - name: Put Plan in Env Var
+        run: |
+          PLAN=$(cat plan.txt)
+          echo "PLAN<<EOF" >> $GITHUB_ENV
+          echo "$PLAN" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Add comment to PR
+        uses: actions/github-script@v6.1.0
+        if: github.event_name == 'pull_request'
+        with:
+          script: |
+            const header = "### Terraform plan";
+            const outcome = "Status: ${{ steps.plan.outcome }}";
+            const metadata = "*Pusher: @${{ github.actor }}, Action: ${{ github.event_name }}"
+            const plan = `\`\`\`diff\n${{ env.PLAN }}\n\`\`\``;
+            const message = `${header}\n${outcome}\n${plan}\n${metadata}`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            })
+
+      - name: Apply terraform changes
+        if: inputs.apply
+        run: |
+          ENVIRONMENT=${{ inputs.environment }} make apply-ci

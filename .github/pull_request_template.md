@@ -1,13 +1,10 @@
 ## Linked Issue
-
 <!-- Insert a link to the issue this PR relates to e.g. #123 -->
 
 ## Description
-
 <!-- Please describe what has been changed or added -->
 
 ## How has this change been tested?
-
 <!-- Please describe in detail how you tested your changes. -->
 <!-- Include details of your testing environment, tests ran to see how -->
 <!-- Your change affects other areas of the code, etc. -->

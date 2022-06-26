@@ -1,0 +1,38 @@
+name: Reusable static analysis workflow
+
+on:
+  workflow_call:
+    inputs:
+      enable_private_modules:
+        description: Configure git to clone private modules
+        required: false
+        default: false
+        type: boolean
+    secrets:
+      GITHUB_PAT:
+        required: false
+
+jobs:
+  static_analysis:
+    name: Pre-commit checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y make
+
+      # Configure git to use HTTPS instead of SSH
+      # ${HOME}/.gitconfig will be mounted to the terraform container
+      - name: Configure git config
+        if: inputs.enable_private_modules
+        env:
+          GITHUB_PAT: ${{ secrets.GITHUB_PAT }}
+        run: |
+          git config --global url."https://$GITHUB_PAT:x-oauth-basic@github.com".insteadOf "ssh://git@github.com"
+          
+      - name: Run pre-commit checks
+        uses: pre-commit/action@v2.0.3
