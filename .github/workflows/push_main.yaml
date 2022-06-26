@@ -1,0 +1,16 @@
+name: Push main
+
+on:
+  push: 
+    branches:
+      - main
+
+jobs:
+  plan:
+    name: Apply changes to prod
+    uses: ./.github/workflows/reusable-terraform-workflow.yaml
+    with:
+      environment: non-prod
+      apply: true
+    secrets:
+      ASSUME_ROLE: ${{ secrets.ASSUME_ROLE }}

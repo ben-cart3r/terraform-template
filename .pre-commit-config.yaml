@@ -15,18 +15,18 @@ repos:
         pass_filenames: false
         types: [terraform]
 
-      - id: terraform_validate
-        name: Terraform validate
-        description: Validates all Terraform configuration files.
-        entry: make validate
-        language: system
-        pass_filenames: false
-        types: [terraform]
-
       - id: terraform_tfsec
         name: Terraform validate with tfsec
         description: Static analysis of Terraform templates to spot potential security issues.
         entry: make sec-scan
+        language: system
+        pass_filenames: false
+        types: [terraform]
+
+      - id: terraform_validate
+        name: Terraform validate
+        description: Validates all Terraform configuration files.
+        entry: make validate
         language: system
         pass_filenames: false
         types: [terraform]
